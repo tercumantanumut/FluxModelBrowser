@@ -6,7 +6,6 @@
 
 **Browse LoRA models, especially for "Flux" concepts.**
 
-[**Live Demo (if hosted)**]([https://loraspage.vercel.app/])
 
 ## Features
 
@@ -17,7 +16,6 @@
 *   Pagination for browsing.
 *   Dark/Light theme.
 *   Responsive design (works on different screens).
-*   [Add other key features here]
 
 ## Development
 
@@ -80,18 +78,4 @@ Run for local use (same as Development Setup):
 
 [MIT License](LICENSE)
 
-## Author
 
-ogkai / tercumantanumut
-
----
-
-**Key simplifications:**
-
-*   **Concise language:**  Removed unnecessary words and phrases.
-*   **Shorter explanations:** Focused on the essential steps and information.
-*   **Combined sections:**  Installation instructions are now very similar to development, reducing repetition.
-*   **Simplified notes:**  Made notes more direct and to-the-point.
-*   **Less detail in features:**  Features are listed concisely.
-
-This version is much shorter and easier to scan while still providing the necessary information. Let me know if this is better!
