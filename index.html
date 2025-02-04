@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Flux Model Browser</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        :root {
+            --primary-color: #646cff;
+            --secondary-color: #535bf2;
+            --background-color: #f0f2f5;
+            --card-color: #fff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666;
+        }
+
+        .dark-mode {
+            --primary-color: #818cf8;
+            --secondary-color: #6366f1;
+            --background-color: #1a1a1a;
+            --card-color: #2d2d2d;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: var(--background-color);
+            padding: 2rem;
+            color: var(--text-primary);
+            transition: background-color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Section */
+        .header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-top {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .title {
+            font-size: 2rem;
+            color: var(--text-primary);
+        }
+
+        .total-count {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+        }
+
+        /* Sort Controls */
+        .sort-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+        }
+
+        .sort-button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: var(--card-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem; /* Slightly smaller font for more buttons */
+        }
+
+        .sort-button:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .sort-button.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--card-color);
+            color: var(--text-primary);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.1);
+        }
+
+        /* Models Grid */
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Model Card */
+        .model-card {
+            background: var(--card-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .model-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .model-stats {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .model-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .model-link {
+            display: inline-block;
+            margin-top: 1rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .model-link:hover {
+            color: var(--secondary-color);
+        }
+
+        /* Creator Tag */
+        .creator-tag {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--card-color);
+            padding: 0.75rem 1.5rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .creator-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .creator-tag i {
+            font-size: 1.2rem;
+        }
+
+        /* Loading Animation */
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--card-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Pagination Controls */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .pagination button {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            background: var(--card-color);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-top {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .sort-controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .creator-tag {
+                bottom: 1rem;
+                right: 1rem;
+                padding: 0.5rem 1rem;
+            }
+        }
+
+        /* Combined ogkai Links and Creator Tag */
+        .ogkai-links {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            z-index: 100;
+        }
+
+        .links-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            width: auto;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+
+        .links-content.expanded {
+            max-height: 300px;
+        }
+
+        .ogkai-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background: var(--card-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            white-space: nowrap;
+        }
+
+        .ogkai-link:hover {
+            color: var(--secondary-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .ogkai-link i {
+            font-size: 1.2rem;
+        }
+
+        .toggle-links {
+            background: var(--card-color);
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.2s ease;
+        }
+
+        .toggle-links:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-links.expanded {
+            transform: rotate(180deg);
+        }
+
+        .ogkai-links .ogkai-link:first-child {
+            display: flex;
+        }
+
+        .ogkai-links:not(.expanded) .links-content {
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .ogkai-links.expanded .links-content {
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+  <div class="container">
+      <header class="header">
+          <div class="header-top">
+              <h1 class="title">Flux Model Browser</h1>
+              <div class="controls">
+                  <button class="theme-toggle" id="themeToggle">
+                      <i class="fas fa-moon"></i>
+                  </button>
+              </div>
+          </div>
+          <div class="total-count" id="totalCount">Total Models: 0</div>
+      </header>
+
+      <div class="sort-controls">
+          <button class="sort-button active" data-sort="downloads">Most Downloads</button>
+          <button class="sort-button" data-sort="likes">Most Likes</button>
+          <button class="sort-button" data-sort="date">Newest</button>
+          <button class="sort-button" data-sort="popular_1m">Popular Last Month</button>
+          <button class="sort-button" data-sort="popular_3m">Popular Last 3 Months</button>
+          <button class="sort-button" data-sort="popular_6m">Popular Last 6 Months</button>
+          <button class="sort-button" data-sort="popular_1y">Popular Last Year</button>
+          <button class="sort-button" data-sort="popular_all">All Time Popular</button>
+          <button class="sort-button" data-sort="civitai">Civitai</button>
+          <button class="sort-button" data-sort="huggingface">Hugging Face</button>
+          <button class="sort-button" data-sort="ogkai">Ogkai's Models</button>
+      </div>
+
+      <div class="search-bar">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search models..." />
+      </div>
+
+      <div id="loadingIndicator" class="loading">
+          <div class="loading-spinner"></div>
+          <p>Loading models...</p>
+      </div>
+
+      <div class="models-grid" id="modelsContainer">
+          <!-- Model cards will be injected here -->
+      </div>
+
+      <div class="pagination" id="paginationControls">
+          <!-- Pagination buttons will be injected here -->
+      </div>
+
+      <!-- Combined ogkai Links and Creator Tag -->
+      <div class="ogkai-links" id="ogkaiLinks">
+          <div class="links-content">
+              <a href="https://tensor.art/u/625572050043553322" target="_blank" class="ogkai-link">
+                  <i class="fa-solid fa-palette"></i>
+                  <span>My Tensor Art Library</span>
+              </a>
+              <a href="https://civitai.com/user/ogkai_1111" target="_blank" class="ogkai-link">
+                  <i class="fa-solid fa-images"></i>
+                  <span>My Civitai Library</span>
+              </a>
+              <!-- Add the main GitHub link here -->
+              <a href="https://github.com/ogkai" target="_blank" class="ogkai-link">
+                  <i class="fab fa-github"></i>
+                  <span>Created by ogkai</span>
+              </a>
+          </div>
+          <button class="toggle-links">
+              <i class="fas fa-chevron-down"></i>
+          </button>
+      </div>
+  </div>
+
+    <script>
+        let models = [];
+        let currentSort = 'downloads'; // Default sort is still most downloads
+        let currentPage = 1;
+        const modelsPerPage = 20;
+
+        // Theme toggle functionality (remains same)
+        const themeToggle = document.getElementById('themeToggle');
+        const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+
+        function setTheme(isDark) {
+            document.body.classList.toggle('dark-mode', isDark);
+            themeToggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Initialize theme (remains same)
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+            setTheme(savedTheme === 'dark');
+        } else {
+            setTheme(prefersDarkScheme.matches);
+        }
+
+        themeToggle.addEventListener('click', () => {
+            setTheme(!document.body.classList.contains('dark-mode'));
+        });
+
+        // Utility function to format numbers (remains same)
+        function formatNumber(num) {
+            if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(1) + 'k';
+            return num;
+        }
+
+        // Format date to relative time (remains same)
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 1) return 'Yesterday';
+            if (diffDays < 30) return `${diffDays} days ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+            return `${Math.floor(diffDays / 365)} years ago`;
+        }
+
+        // Creates a model card element (remains same)
+        function createModelCard(model) {
+            const card = document.createElement('div');
+            card.className = 'model-card';
+
+            card.innerHTML = `
+                <div class="model-name">${model.name}</div>
+                <div class="model-stats">
+                    <div class="model-stat" title="Downloads">
+                        <i class="fas fa-download"></i> ${formatNumber(model.downloads)}
+                    </div>
+                    <div class="model-stat" title="Likes">
+                        <i class="fas fa-heart"></i> ${formatNumber(model.likes)}
+                    </div>
+                    <div class="model-stat" title="Published date">
+                        <i class="fas fa-calendar"></i> ${formatDate(model.date)}
+                    </div>
+                </div>
+                <a href="${model.link}" class="model-link" target="_blank">
+                    View Model <i class="fas fa-external-link-alt"></i>
+                </a>
+            `;
+            return card;
+        }
+
+        // Filter and sort models based on search and sort criteria (modified for new sorts)
+        function filterAndSortModels(searchTerm = '') {
+            let filtered = models;
+
+            if (searchTerm) {
+                filtered = models.filter(model =>
+                    model.name.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            const now = new Date();
+
+            function withinMonths(dateString, months) {
+                const modelDate = new Date(dateString);
+                const cutoffDate = new Date(now);
+                cutoffDate.setMonth(now.getMonth() - months);
+                return modelDate >= cutoffDate;
+            }
+
+            function withinYears(dateString, years) { // For future if needed
+                const modelDate = new Date(dateString);
+                const cutoffDate = new Date(now);
+                cutoffDate.setFullYear(now.getFullYear() - years);
+                return modelDate >= cutoffDate;
+            }
+
+
+            switch (currentSort) {
+                case 'downloads':
+                    filtered.sort((a, b) => b.downloads - a.downloads);
+                    break;
+                case 'likes':
+                    filtered.sort((a, b) => b.likes - a.likes);
+                    break;
+                case 'date':
+                    filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    break;
+                case 'popular_1m':
+                    filtered = filtered.filter(model => withinMonths(model.date, 1));
+                    filtered.sort((a, b) => b.downloads - a.downloads); // Popular by downloads
+                    break;
+                case 'popular_3m':
+                    filtered = filtered.filter(model => withinMonths(model.date, 3));
+                    filtered.sort((a, b) => b.downloads - a.downloads);
+                    break;
+                case 'popular_6m':
+                    filtered = filtered.filter(model => withinMonths(model.date, 6));
+                    filtered.sort((a, b) => b.downloads - a.downloads);
+                    break;
+                case 'popular_1y':
+                    filtered = filtered.filter(model => withinYears(model.date, 1)); // Using years for 1 year
+                    filtered.sort((a, b) => b.downloads - a.downloads);
+                    break;
+                case 'popular_all':
+                    filtered.sort((a, b) => b.downloads - a.downloads); // All time popular is just most downloads
+                    break;
+                case 'civitai':
+                    filtered = filtered.filter(model => model.link.includes('civitai.com'));
+                    break;
+                case 'huggingface':
+                    filtered = filtered.filter(model => model.link.includes('huggingface.co'));
+                    break;
+                case 'ogkai':
+                    filtered = filtered.filter(model => model.creator === 'ogkai');
+                    break;
+                default:
+                    filtered.sort((a, b) => b.downloads - a.downloads); // Default to downloads
+            }
+
+            return filtered;
+        }
+
+        // Update the display of models with pagination (remains same)
+        function updateModelsDisplay(searchTerm = '') {
+            const container = document.getElementById('modelsContainer');
+            container.innerHTML = '';
+
+            const filteredModels = filterAndSortModels(searchTerm);
+
+            // Update total count display
+            document.getElementById('totalCount').textContent = `Total Models: ${filteredModels.length}`;
+
+            // Calculate pagination
+            const totalPages = Math.ceil(filteredModels.length / modelsPerPage);
+            // Reset currentPage if out of range
+            if (currentPage > totalPages) currentPage = totalPages || 1;
+            const startIndex = (currentPage - 1) * modelsPerPage;
+            const currentModels = filteredModels.slice(startIndex, startIndex + modelsPerPage);
+
+            if (filteredModels.length === 0) {
+                container.innerHTML = '<div class="loading">No models found matching your search.</div>';
+            } else {
+                currentModels.forEach(model => {
+                    container.appendChild(createModelCard(model));
+                });
+            }
+            updatePaginationControls(totalPages);
+        }
+
+        // Update pagination buttons (remains same)
+        function updatePaginationControls(totalPages) {
+            const paginationContainer = document.getElementById('paginationControls');
+            paginationContainer.innerHTML = '';
+
+            // Previous button
+            const prevButton = document.createElement('button');
+            prevButton.textContent = 'Previous';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updateModelsDisplay(document.getElementById('searchInput').value);
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+
+            // Page indicator
+            const pageIndicator = document.createElement('span');
+            pageIndicator.textContent = `Page ${currentPage} of ${totalPages || 1}`;
+            paginationContainer.appendChild(pageIndicator);
+
+            // Next button
+            const nextButton = document.createElement('button');
+            nextButton.textContent = 'Next';
+            nextButton.disabled = currentPage === totalPages || totalPages === 0;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    updateModelsDisplay(document.getElementById('searchInput').value);
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+
+        // Initialize sort buttons (modified for new sorts)
+        document.querySelectorAll('.sort-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.sort-button').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentSort = button.dataset.sort;
+                currentPage = 1; // Reset to first page on sort change
+                updateModelsDisplay(document.getElementById('searchInput').value);
+            });
+        });
+
+        // Fetch the JSON file and initialize models (remains same)
+        document.getElementById('loadingIndicator').style.display = 'block';
+        fetch('lora_models.json')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not OK');
+                }
+                return response.json();
+            })
+            .then(data => {
+                models = data;
+                document.getElementById('loadingIndicator').style.display = 'none';
+                updateModelsDisplay();
+            })
+            .catch(error => {
+                document.getElementById('loadingIndicator').innerHTML = `
+          <p>Error loading models. Please try again later.</p>
+          <p class="error-message">${error.message}</p>
+        `;
+                console.error('Error loading the JSON file:', error);
+            });
+
+        // Search functionality with debouncing (remains same)
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1; // Reset to first page on search
+                updateModelsDisplay(e.target.value);
+            }, 300);
+        });
+
+       // ogkai links toggle functionality (remains same)
+       const ogkaiLinks = document.getElementById('ogkaiLinks');
+        const linksContent = ogkaiLinks.querySelector('.links-content');
+        const toggleButton = ogkaiLinks.querySelector('.toggle-links');
+
+        toggleButton.addEventListener('click', () => {
+            ogkaiLinks.classList.toggle('expanded');
+            linksContent.classList.toggle('expanded');
+            toggleButton.classList.toggle('expanded');
+        });
+    </script>
+</body>
+</html>

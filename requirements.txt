@@ -1,0 +1,7 @@
+Flask
+gunicorn
+flask-cors
+apscheduler
+python-dotenv
+huggingface-hub
+requests
