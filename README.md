@@ -6,7 +6,7 @@
 
 **Browse LoRA models, especially for "Flux" concepts.**
 
-[**Live Demo (if hosted)**]([link-to-live-demo](https://loraspage.vercel.app/))
+[**Live Demo (if hosted)**]([https://loraspage.vercel.app/])
 
 ## Features
 
